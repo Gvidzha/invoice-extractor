@@ -1,0 +1,14 @@
+name: ner_project
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - numpy
+  - scikit-learn
+  - pip
+  - pip:
+      - transformers
+      - datasets
+  - pytorch
+  - torchvision

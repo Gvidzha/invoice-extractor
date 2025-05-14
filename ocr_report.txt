@@ -1,0 +1,64 @@
+Atpazīto simbolu skaits: 20
+Kopējais simbolu skaits (aptuveni): 596
+Atpazīšanas precizitāte: 3.36%
+----------------------------------------
+Atpazīto simbolu skaits: 688
+Kopējais simbolu skaits (aptuveni): 514
+Atpazīšanas precizitāte: 133.85%
+----------------------------------------
+Atpazīto simbolu skaits: 287
+Kopējais simbolu skaits (aptuveni): 422
+Atpazīšanas precizitāte: 68.01%
+----------------------------------------
+Atpazīto simbolu skaits: 245
+Kopējais simbolu skaits (aptuveni): 395
+Atpazīšanas precizitāte: 62.03%
+----------------------------------------
+Atpazīto simbolu skaits: 707
+Kopējais simbolu skaits (aptuveni): 399
+Atpazīšanas precizitāte: 177.19%
+----------------------------------------
+Atpazīto simbolu skaits: 504
+Kopējais simbolu skaits (aptuveni): 202
+Atpazīšanas precizitāte: 249.50%
+----------------------------------------
+Atpazīto simbolu skaits: 1777
+Kopējais simbolu skaits (aptuveni): 3683
+Atpazīšanas precizitāte: 48.25%
+----------------------------------------
+Atpazīto simbolu skaits: 1162
+Kopējais simbolu skaits (aptuveni): 1826
+Atpazīšanas precizitāte: 63.64%
+----------------------------------------
+Atpazīto simbolu skaits: 20
+Kopējais simbolu skaits (aptuveni): 596
+Atpazīšanas precizitāte: 3.36%
+----------------------------------------
+Atpazīto simbolu skaits: 671
+Kopējais simbolu skaits (aptuveni): 514
+Atpazīšanas precizitāte: 130.54%
+----------------------------------------
+Atpazīto simbolu skaits: 283
+Kopējais simbolu skaits (aptuveni): 422
+Atpazīšanas precizitāte: 67.06%
+----------------------------------------
+Atpazīto simbolu skaits: 279
+Kopējais simbolu skaits (aptuveni): 395
+Atpazīšanas precizitāte: 70.63%
+----------------------------------------
+Atpazīto simbolu skaits: 564
+Kopējais simbolu skaits (aptuveni): 399
+Atpazīšanas precizitāte: 141.35%
+----------------------------------------
+Atpazīto simbolu skaits: 442
+Kopējais simbolu skaits (aptuveni): 202
+Atpazīšanas precizitāte: 218.81%
+----------------------------------------
+Atpazīto simbolu skaits: 1780
+Kopējais simbolu skaits (aptuveni): 3683
+Atpazīšanas precizitāte: 48.33%
+----------------------------------------
+Atpazīto simbolu skaits: 1223
+Kopējais simbolu skaits (aptuveni): 1826
+Atpazīšanas precizitāte: 66.98%
+----------------------------------------
