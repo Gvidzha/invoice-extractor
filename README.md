@@ -1,0 +1,2 @@
+# invoice-extractor
+Meitiņai palīdzēt
