@@ -1,14 +1,39 @@
-name: ner_project
+name: invoice-extractor
 channels:
-  - defaults
-  - conda-forge
-dependencies:
-  - python=3.10
-  - numpy
-  - scikit-learn
-  - pip
-  - pip:
-      - transformers
-      - datasets
   - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  # Core ML
+  - python=3.10  # Colab noklusējums
+  - pytorch=2.7.0
   - torchvision
+  - torchaudio
+  - cudatoolkit=11.8  # Saderīgs ar Tesla T4
+  
+  # Data processing
+  - numpy=1.26.0
+  - pandas=2.2.3
+  - scikit-learn=1.6.1
+  - scipy=1.15.3
+  
+  # OCR/PDF
+  - pdf2image=1.17.0
+  - pytesseract=0.3.13
+  - opencv=4.8.0
+  - pillow=11.2.1
+  
+  # NLP
+  - transformers=4.51.3
+  - spacy=3.8.5
+  - spacy-legacy=3.0.12
+  - spacy-models:
+      - en_core_web_sm=3.8.0
+      - de_core_news_sm=3.8.0
+  
+  # Utils
+  - pip=23.3.1
+  - pip:
+      - pdfplumber==0.11.0
+      - langdetect==1.0.9
+      - datasets==3.6.0
