@@ -1,4 +1,4 @@
-# src\training\train_ner.py
+# src/training/train_ner.py
 
 from transformers import (
     AutoTokenizer,
@@ -9,14 +9,15 @@ from transformers import (
 )
 from datasets import load_from_disk, DatasetDict
 import json
+import argparse
 from pathlib import Path
 import numpy as np
+from src.config.ner_config import NERConfig
 
-# 1. Datu ielāde un pārbaude
-def load_data():
+def load_data(data_path: str):
     try:
-        train_dataset = load_from_disk("data/train_dataset")
-        val_dataset = load_from_disk("data/val_dataset")
+        train_dataset = load_from_disk(f"{data_path}/train_dataset")
+        val_dataset = load_from_disk(f"{data_path}/val_dataset")
         dataset = DatasetDict({
             "train": train_dataset,
             "validation": val_dataset
@@ -29,22 +30,20 @@ def load_data():
         return dataset
         
     except Exception as e:
-        raise ValueError(f"Datu ielādes kļūda: {str(e)}")
+        raise ValueError(f"Datu ielādes kļūda: {str(e)}") from e
 
-# 2. Tokenizācijas funkcija
-def tokenize_and_align(examples):
+def tokenize_and_align_labels(examples, tokenizer, label_map, max_length):
     tokenized_inputs = tokenizer(
         examples["tokens"],
         truncation=True,
         padding="max_length",
-        max_length=128,
+        max_length=max_length,
         is_split_into_words=True,
-        return_tensors="pt"
+        return_tensors="np"
     )
     
-    # Pārveidot labels par skaitļiem
-    aligned_labels = []
-    for i, labels in enumerate(examples["labels"]):
+    labels = []
+    for i, label_seq in enumerate(examples["labels"]):
         word_ids = tokenized_inputs.word_ids(batch_index=i)
         previous_word_idx = None
         label_ids = []
@@ -53,70 +52,50 @@ def tokenize_and_align(examples):
             if word_idx is None:
                 label_ids.append(-100)
             elif word_idx != previous_word_idx:
-                label_ids.append(label_map[labels[word_idx]])
+                label_ids.append(label_map[label_seq[word_idx]])
             else:
-                label_ids.append(label_map[labels[word_idx]] if labels[word_idx].startswith("I") else -100)
+                label_ids.append(label_map[label_seq[word_idx]] if label_seq[word_idx].startswith("I") else -100)
             previous_word_idx = word_idx
             
-        aligned_labels.append(label_ids)
+        labels.append(label_ids)
     
-    tokenized_inputs["labels"] = aligned_labels
+    tokenized_inputs["labels"] = labels
     return tokenized_inputs
 
-def main():
-    # 1. Ielādēt datus
-    dataset = load_data()
-    
-    # 2. Ielādēt labelu sarakstu
-    with open("data/train_dataset/label_list.json", "r") as f:
+def load_label_map(label_path: str):
+    with open(f"{label_path}/label_list.json", "r") as f:
         label_list = json.load(f)
-    
-    # 3. Inicializēt tokenizētāju
-    global tokenizer, label_map
-    model_name = "bert-base-multilingual-cased"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    label_map = {label: i for i, label in enumerate(label_list)}
-    id2label = {i: label for i, label in enumerate(label_list)}
-    
+    return {label: i for i, label in enumerate(label_list)}
+
+def print_label_info(label_map):
     print("\nLietotie entītiju tipi:")
     for label, idx in label_map.items():
         print(f"{idx}: {label}")
 
-    # 4. Tokenizēt datus
-    def tokenize_and_align_labels(examples):
-        tokenized_inputs = tokenizer(
-            examples["tokens"],
-            truncation=True,
-            padding="max_length",
-            max_length=128,
-            is_split_into_words=True,
-            return_tensors="pt"
-        )
-        
-        # Iegūstam labelus no examples
-        labels = []
-        for i, label_seq in enumerate(examples["labels"]):
-            word_ids = tokenized_inputs.word_ids(batch_index=i)
-            label_ids = []
-            for word_idx in word_ids:
-                if word_idx is None:
-                    label_ids.append(-100)
-                else:
-                    label_ids.append(label_map[label_seq[word_idx]])
-            labels.append(label_ids)
-        
-        tokenized_inputs["labels"] = labels
-        return tokenized_inputs
+def setup_training(config: NERConfig, data_path: str = "data", label_path: str = "data/train_dataset"):
+    # 1. Ielādēt datus
+    dataset = load_data(data_path)
     
+    # 2. Ielādēt labelu sarakstu
+    label_map = load_label_map(label_path)
+    id2label = {i: label for label, i in label_map.items()}
+    print_label_info(label_map)
+
+    # 3. Inicializēt tokenizētāju
+    tokenizer = AutoTokenizer.from_pretrained(config.model_name)
+
+    # 4. Tokenizēt datus
     tokenized_dataset = dataset.map(
-        tokenize_and_align_labels,
+        lambda examples: tokenize_and_align_labels(
+            examples, tokenizer, label_map, config.max_length
+        ),
         batched=True,
-        remove_columns=['text', 'tokens', 'entities']  # Noņem tikai konkrētās kolonnas
+        remove_columns=['text', 'tokens', 'entities']
     )
 
     # 5. Inicializēt modeli
     model = AutoModelForTokenClassification.from_pretrained(
-        model_name,
+        config.model_name,
         num_labels=len(label_map),
         id2label=id2label,
         label2id=label_map
@@ -127,16 +106,16 @@ def main():
 
     # 7. Treniņa parametri
     training_args = TrainingArguments(
-        output_dir="./results",
+        output_dir=config.output_dir,
         eval_strategy="epoch",
-        eval_steps=500,
+        eval_steps=config.eval_steps,
         save_strategy="steps",
-        save_steps=500,
-        learning_rate=2e-5,
-        per_device_train_batch_size=8,
-        num_train_epochs=3,
-        weight_decay=0.01,
-        logging_dir="./logs",
+        save_steps=config.save_steps,
+        learning_rate=config.learning_rate,
+        per_device_train_batch_size=config.per_device_train_batch_size,
+        num_train_epochs=config.num_train_epochs,
+        weight_decay=config.weight_decay,
+        logging_dir=config.logging_dir,
         report_to="none"
     )
 
@@ -144,11 +123,30 @@ def main():
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=tokenized_dataset["train"],  # ja dataset ir sadalīts
-        eval_dataset=tokenized_dataset["validation"],  # pievienojiet evaluācijas datus
+        train_dataset=tokenized_dataset["train"],
+        eval_dataset=tokenized_dataset["validation"],
         data_collator=data_collator,
         tokenizer=tokenizer,
     )
+
+    return trainer
+
+def main():
+    parser = argparse.ArgumentParser(description='Train NER model')
+    parser.add_argument('--config', type=str, default=None, help='Path to config file')
+    parser.add_argument('--data_path', type=str, default='data', help='Path to training data')
+    parser.add_argument('--label_path', type=str, default='data/train_dataset', help='Path to label files')
+    args = parser.parse_args()
+
+    # Load config (use default if not specified)
+    config = NERConfig()
+    if args.config:
+        import yaml
+        with open(args.config) as f:
+            config_data = yaml.safe_load(f)
+            config = NERConfig(**config_data)
+
+    trainer = setup_training(config, args.data_path, args.label_path)
 
     # 9. Trenēt modeli
     print("\nSākam apmācību...")
